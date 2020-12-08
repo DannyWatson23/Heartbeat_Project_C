@@ -6,7 +6,7 @@
 #include <netdb.h>
 #include <errno.h>
 #include <unistd.h>
-
+#include <arpa/inet.h>
 
 int main(int argc, char * argv[])
 {
@@ -18,8 +18,9 @@ int main(int argc, char * argv[])
 	memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(10088);
+    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
     int len = sizeof(buff);
-    if (sendto(sockfd, buff, strlen(buff), MSG_CONFIRM, (const struct sockaddr *)&server_addr, &len) < 0)
+    if (sendto(sockfd, buff, strlen(buff)+1, 0, (const struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
 		{
 			printf("Failed to send: %s\n", strerror(errno));
 			exit(1);

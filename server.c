@@ -23,7 +23,7 @@ int main(int argc, char * argv[])
 	int sockfd;
 	int ret;
 	char buff[96];
-	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+	sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (!sockfd)
 	{
 		printf("Socket creation failed\n");
@@ -56,16 +56,26 @@ int main(int argc, char * argv[])
 	len = sizeof(cli_addr);
 	for (;;)
 	{
+		fflush(stdout);
 		printf("Waiting on port %d\n",PORT);
 		n = recvfrom(sockfd, (char *)buff, 128, MSG_WAITALL, (struct sockaddr *)&cli_addr,&len);
-		printf("Received bytes: %d\n", n);
-		if (sizeof(buff[n]) > 1)
+		if (n != -1)
 		{
+		printf("Received bytes: %d\n", n);
+		printf("sizeof n: %ld\n", sizeof(buff));
+		if (sizeof(buff[n]) == 1)
+		 {
 			buff[n] = 0;
-			printf("received msg %s\nLength of packet: %ld", buff, sizeof(buff));
+			printf("received msg %s\nLength of packet: %ld\n", buff, sizeof(n));
+			sleep(10);
+		 }
+	    }
+		else
+		{
+			printf("Error: %s\n", strerror(errno));
 		}
-	}
 
+	}
 	close(sockfd);
 	return 0;
 }
