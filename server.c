@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <stdlib.h>
 #include <string.h>
 #include <netdb.h>
@@ -11,15 +13,16 @@
 #define BACKLOG 10
 
 
-struct {
-	char msg[50];
-	char * receiver;
-}heartbeat_t;
+typedef struct {
+	char type[5];
+	char * data;
+	struct sockaddr_in cli_addr;
+} heartbeat_t;
 
 
 int main(int argc, char * argv[])
 {
-	struct sockaddr_in server_addr, cli_addr;
+	struct sockaddr_in server_addr;
 	int sockfd;
 	int ret;
 	char buff[96];
@@ -30,10 +33,10 @@ int main(int argc, char * argv[])
 		exit(1);
 	}
 	memset(&server_addr, 0, sizeof(server_addr));
-	memset(&cli_addr, 0, sizeof(cli_addr));
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(PORT);
+	heartbeat_t hb;
 	ret = bind(sockfd, (const struct sockaddr *)&server_addr, sizeof(server_addr));
 	if (ret != 0)
 	{
@@ -53,15 +56,16 @@ int main(int argc, char * argv[])
 	}
 	int n;
 	int len;
-	len = sizeof(cli_addr);
+	len = sizeof(hb.cli_addr);
 	for (;;)
 	{
 		fflush(stdout);
 		printf("Waiting on port %d\n",PORT);
-		n = recvfrom(sockfd, (char *)buff, 128, MSG_WAITALL, (struct sockaddr *)&cli_addr,&len);
+		n = recvfrom(sockfd, (char *)buff, 128, MSG_WAITALL, &hb.cli_addr,&len);
 		if (n != -1)
 		{
-		printf("Received bytes: %d\n", n);
+		printf("Length of: %d\n", len);
+		printf("Received bytes: %d\nFrom: %s\n", n,inet_ntoa(hb.cli_addr.sin_addr));
 		printf("sizeof n: %ld\n", sizeof(buff));
 		if (sizeof(buff[n]) == 1)
 		 {
