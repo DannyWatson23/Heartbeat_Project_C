@@ -1,0 +1,12 @@
+Server:
+ - Create socket
+ - Bind socket 
+ - Listen for incoming heartbeats (only accept if they send the known key with the heartbeat message)
+ 
+ 
+Client:
+ - Create socket
+ - Bind socket
+ - Send heartbeat to server
+ 
+ 
